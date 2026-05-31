@@ -2,7 +2,9 @@
 
 **The open-source security gateway for AI agents.**
 
-mcp-firewall sits between your MCP client and server, intercepting every tool call with enterprise-grade policy enforcement, real-time threat detection, and compliance-ready audit logging.
+mcp-firewall is evolving into a **Zero Trust AI Execution Layer** with a broader **Universal Context Protocol (UCP)** direction: a default runtime and context control layer that sits between AI agents, MCP servers, tools, APIs, files, databases, and production systems.
+
+Today, it sits between your MCP client and server, intercepting every tool call with enterprise-grade policy enforcement, real-time threat detection, and compliance-ready audit logging.
 
 ```
 AI Agent ←→ mcp-firewall ←→ MCP Server
@@ -16,7 +18,7 @@ AI Agent ←→ mcp-firewall ←→ MCP Server
 
 AI agents can now execute tools — read files, run commands, query databases, make HTTP requests. Without guardrails, a single prompt injection can exfiltrate your credentials, execute arbitrary code, and chain tools for privilege escalation.
 
-mcp-firewall is the WAF for AI agents.
+mcp-firewall is the WAF for AI agents. The longer-term platform goal is broader: every AI action should be identified, risk-scored, authorized, audited, and executed with short-lived least-privilege access. See [Zero Trust AI Execution Layer](docs/zero-trust-execution-layer.md), [Universal Context Protocol](docs/universal-context-protocol.md), and [Implementation Plan](docs/implementation-plan.md).
 
 ## Quick Start
 
