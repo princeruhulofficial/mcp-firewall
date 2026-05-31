@@ -18,6 +18,10 @@ AI agents can now execute tools — read files, run commands, query databases, m
 
 mcp-firewall is the WAF for AI agents.
 
+## Clean-room product direction
+
+This fork is a reference artifact. The private product should be built from a blank private repository as a Zero Trust AI Execution Layer with Universal Context Protocol support, rather than by extending this forked codebase. See [Clean-Room Private Build Plan](docs/clean-room-build-plan.md).
+
 ## Quick Start
 
 ```bash
