@@ -67,6 +67,7 @@ not runtime code:
 - [Private Product Vision](private-product/product-vision.md)
 - [UCP Envelope v1 Specification](private-product/ucp-envelope-v1-spec.md)
 - [Sprint 0 Backlog](private-product/sprint-0-backlog.md)
+- [Implementation Status](private-product/implementation-status.md)
 
 ## Private repository bootstrap
 
@@ -281,4 +282,6 @@ This repository should only keep:
 - clean-room plan
 - migration decision records
 
-Do not add new private product runtime code here.
+The temporary scaffold in `product/ztx-runtime/` is the first clean-room code start
+inside this workspace because a separate private repository is not available here.
+Move it to a private repository before continuing beyond prototype work.
