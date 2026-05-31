@@ -18,6 +18,9 @@ class Action(str, Enum):
     REDACT = "redact"
     PROMPT = "prompt"  # ask human
     ALERT = "alert"  # allow but alert
+    ISSUE_CAPABILITY = "issue_capability"  # mint a scoped, short-lived access grant
+    ESCALATE = "escalate"  # route to an external approval workflow
+    SANDBOX = "sandbox"  # allow only in an isolated execution environment
 
 
 class Severity(str, Enum):
@@ -90,6 +93,87 @@ class PipelineDecision(BaseModel):
     reason: str = ""
     severity: Severity = Severity.INFO
     details: dict[str, Any] = Field(default_factory=dict)
+
+
+class RiskAssessment(BaseModel):
+    """Risk score attached to an AI action before execution.
+
+    This is the first platform-level primitive for a Zero Trust AI Execution
+    Layer: every requested action can be scored before a capability is issued
+    or a human approval flow is triggered.
+    """
+
+    score: int = Field(default=0, ge=0, le=100)
+    severity: Severity = Severity.INFO
+    factors: list[str] = Field(default_factory=list)
+    requires_approval: bool = False
+
+    @classmethod
+    def from_score(cls, score: int, factors: list[str] | None = None) -> RiskAssessment:
+        """Create a risk assessment using the default score-to-severity bands."""
+        if score >= 90:
+            severity = Severity.CRITICAL
+        elif score >= 70:
+            severity = Severity.HIGH
+        elif score >= 40:
+            severity = Severity.MEDIUM
+        elif score >= 10:
+            severity = Severity.LOW
+        else:
+            severity = Severity.INFO
+
+        return cls(
+            score=score,
+            severity=severity,
+            factors=factors or [],
+            requires_approval=score >= 70,
+        )
+
+
+class CapabilityStatus(str, Enum):
+    """Lifecycle state for a one-time execution capability."""
+
+    ACTIVE = "active"
+    CONSUMED = "consumed"
+    REVOKED = "revoked"
+    EXPIRED = "expired"
+
+
+class CapabilityGrant(BaseModel):
+    """Short-lived, scoped access grant for one AI action.
+
+    The runtime can issue this after policy and risk evaluation. A tool runner
+    should consume it exactly once, or revoke it when the action is cancelled.
+    """
+
+    id: str = Field(default_factory=lambda: f"cap_{uuid.uuid4().hex}")
+    agent_id: str
+    tool_name: str
+    scopes: list[str] = Field(default_factory=list)
+    resource_constraints: dict[str, Any] = Field(default_factory=dict)
+    issued_at: float = Field(default_factory=time.time)
+    expires_at: float = Field(default_factory=lambda: time.time() + 60)
+    single_use: bool = True
+    status: CapabilityStatus = CapabilityStatus.ACTIVE
+
+    @property
+    def expired(self) -> bool:
+        """Return true when the capability is past its expiry time."""
+        return time.time() >= self.expires_at
+
+    @property
+    def usable(self) -> bool:
+        """Return true when the capability can still authorize execution."""
+        return self.status == CapabilityStatus.ACTIVE and not self.expired
+
+    def consume(self) -> None:
+        """Mark a single-use capability as consumed after successful execution."""
+        if self.single_use:
+            self.status = CapabilityStatus.CONSUMED
+
+    def revoke(self) -> None:
+        """Revoke this capability before it is used."""
+        self.status = CapabilityStatus.REVOKED
 
 
 class AuditEvent(BaseModel):
